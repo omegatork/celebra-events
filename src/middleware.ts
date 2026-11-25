@@ -1,21 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, verifySessionValue } from "@/shared/auth/session";
+import { SESSION_COOKIE } from "@/modules/identity/session-cookie";
 
-// Organizer-only surfaces. Public: "/", "/e/*", "/login", "/api/rsvp", "/api/healthz", "/api/readyz".
+// Cheap gate for UX: no session cookie -> redirect/401 before rendering.
+// The real authorization (DB-backed session + permissions) happens in every route handler.
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/events/:path*", "/api/guests/:path*"]
+  matcher: [
+    "/dashboard/:path*",
+    "/cuenta/:path*",
+    "/admin/:path*",
+    "/api/events/:path*",
+    "/api/guests/:path*",
+    "/api/admin/:path*",
+    "/api/account/:path*"
+  ]
 };
 
-export async function middleware(req: NextRequest) {
-  const secret = process.env.SESSION_SECRET;
-  // Fail closed if the secret is missing.
-  const ok = !!secret && (await verifySessionValue(req.cookies.get(SESSION_COOKIE)?.value, secret));
-  if (ok) return NextResponse.next();
+export function middleware(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+  if (pathname === "/admin/login") return NextResponse.next();
+  if (req.cookies.get(SESSION_COOKIE)?.value) return NextResponse.next();
 
-  if (req.nextUrl.pathname.startsWith("/api/")) {
+  if (pathname.startsWith("/api/")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const login = new URL("/login", req.url);
-  login.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
-  return NextResponse.redirect(login);
+  const target = new URL(pathname.startsWith("/admin") ? "/admin/login" : "/login", req.url);
+  target.searchParams.set("next", pathname + search);
+  return NextResponse.redirect(target);
 }

@@ -13,10 +13,13 @@ import {
 } from "lucide-react";
 import { listDemoEvents } from "@/modules/events/repository";
 import { findDemoGuestToken } from "@/modules/guests/repository";
+import { getSession } from "@/modules/identity/sessions";
+import AuthMenu from "@/components/AuthMenu";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const signedIn = !!(await getSession().catch(() => null));
   // Only demo events are listed publicly; customer events never appear here.
   const events = await listDemoEvents();
   const demoTokens: Record<string, string | undefined> = Object.fromEntries(
@@ -59,12 +62,7 @@ export default async function HomePage() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="px-4 py-2 rounded-xl bg-[#1A3C34] hover:bg-[#122b25] text-white text-xs uppercase tracking-wider font-semibold transition shadow-sm"
-            >
-              Panel & Editor SaaS
-            </Link>
+            <AuthMenu signedIn={signedIn} />
           </div>
         </div>
       </header>
@@ -88,7 +86,7 @@ export default async function HomePage() {
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <Link
-              href="/dashboard"
+              href="/registro"
               className="px-7 py-4 rounded-2xl bg-[#1A3C34] hover:bg-[#122a24] text-white text-xs uppercase tracking-widest font-semibold shadow-lg transition"
             >
               Crear o Editar Invitación Ahora
@@ -168,10 +166,10 @@ export default async function HomePage() {
                   </Link>
                 )}
                 <Link
-                  href={`/dashboard?slug=${evt.slug}`}
+                  href="/registro"
                   className="py-3 px-4 rounded-xl bg-stone-100 text-stone-700 text-center text-xs uppercase tracking-wider font-semibold hover:bg-stone-200 transition"
                 >
-                  Editar en Studio
+                  Crear la mía
                 </Link>
               </div>
             </div>
@@ -274,7 +272,7 @@ export default async function HomePage() {
               ))}
             </ul>
             <Link
-              href="/dashboard"
+              href="/registro"
               className="block w-full py-3.5 rounded-xl border border-stone-300 text-center text-xs uppercase tracking-widest font-semibold hover:bg-stone-100 transition"
             >
               Comenzar en el Editor
@@ -307,7 +305,7 @@ export default async function HomePage() {
               ))}
             </ul>
             <Link
-              href="/dashboard"
+              href="/registro"
               className="block w-full py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-center text-xs uppercase tracking-widest font-bold transition"
             >
               Probar Evento Completo

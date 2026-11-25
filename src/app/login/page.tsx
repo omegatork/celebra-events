@@ -1,82 +1,150 @@
 "use client";
 
 import React, { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Lock } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import AuthShell, { inputClass, labelClass, postJson, primaryButtonClass, safeNext } from "@/components/AuthShell";
 
-function LoginForm() {
-  const router = useRouter();
+type Mode = "cuenta" | "invitacion";
+
+function LoginForms() {
   const params = useSearchParams();
+  const [mode, setMode] = useState<Mode>(params.get("modo") === "invitacion" ? "invitacion" : "cuenta");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [slug, setSlug] = useState("");
+  const [invPassword, setInvPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const next = safeNext(params.get("next"));
 
-  // Only allow relative redirects inside this site.
-  const nextParam = params.get("next") || "/dashboard";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/dashboard";
-
-  const onSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password })
-      });
-      if (res.ok) {
-        router.replace(next);
-        router.refresh();
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || "No se pudo iniciar sesión");
-      }
-    } finally {
-      setLoading(false);
+    const { ok, data } =
+      mode === "cuenta"
+        ? await postJson("/api/auth/login", { email, password })
+        : await postJson("/api/auth/invitation", { slug, password: invPassword });
+    setLoading(false);
+    if (ok) {
+      window.location.href = mode === "cuenta" ? next : "/dashboard";
+    } else {
+      setError(data.error || "No se pudo iniciar sesión");
     }
   };
 
-  return (
-    <form
-      onSubmit={onSubmit}
-      className="w-full max-w-sm p-8 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5"
+  const tab = (m: Mode, label: string) => (
+    <button
+      type="button"
+      onClick={() => {
+        setMode(m);
+        setError("");
+      }}
+      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${
+        mode === m ? "bg-white shadow-sm text-[#1A3C34]" : "text-stone-500"
+      }`}
     >
-      <div className="text-center space-y-2">
-        <div className="w-11 h-11 mx-auto rounded-2xl bg-[#1A3C34] text-amber-200 flex items-center justify-center">
-          <Lock className="w-5 h-5" />
-        </div>
-        <h1 className="font-serif text-2xl text-[#1A3C34]">celebra.events</h1>
-        <p className="text-sm text-stone-500">Acceso al panel de organizadores</p>
+      {label}
+    </button>
+  );
+
+  return (
+    <AuthShell
+      title="Iniciar sesión"
+      subtitle={mode === "cuenta" ? "Administra tus invitaciones" : "Para invitaciones creadas sin cuenta"}
+      footer={
+        <>
+          ¿No tienes cuenta?{" "}
+          <Link href="/registro" className="font-semibold text-[#1A3C34] underline">
+            Crear cuenta
+          </Link>
+        </>
+      }
+    >
+      <div className="flex gap-1 p-1 rounded-xl bg-stone-100">
+        {tab("cuenta", "Con mi cuenta")}
+        {tab("invitacion", "Contraseña de invitación")}
       </div>
-      <input
-        type="password"
-        autoFocus
-        required
-        autoComplete="current-password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Contraseña"
-        className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm"
-      />
-      {error && <p className="text-sm text-rose-700">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-3 rounded-xl bg-[#1A3C34] hover:bg-[#122b25] text-white text-xs uppercase tracking-widest font-semibold"
-      >
-        {loading ? "Verificando..." : "Entrar"}
-      </button>
-    </form>
+
+      <form onSubmit={submit} className="space-y-4">
+        {mode === "cuenta" ? (
+          <>
+            <div>
+              <label className={labelClass}>Correo</label>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Contraseña</label>
+              <input
+                type="password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <label className={labelClass}>Dirección de tu invitación</label>
+              <div className="flex items-center rounded-xl border border-stone-200 overflow-hidden">
+                <span className="pl-4 pr-1 text-sm text-stone-400 whitespace-nowrap">/e/</span>
+                <input
+                  type="text"
+                  required
+                  placeholder="sofia-y-mateo"
+                  autoCapitalize="none"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  className="w-full py-3 pr-4 text-sm focus:outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <label className={labelClass}>Contraseña de invitación</label>
+              <input
+                type="text"
+                required
+                placeholder="XXXX-XXXX-XXXX"
+                autoCapitalize="characters"
+                autoComplete="off"
+                value={invPassword}
+                onChange={(e) => setInvPassword(e.target.value)}
+                className={`${inputClass} font-mono tracking-wider`}
+              />
+              <p className="mt-1.5 text-xs text-stone-400">La recibiste al contratar tu invitación.</p>
+            </div>
+          </>
+        )}
+
+        {error && <p className="text-sm text-rose-700">{error}</p>}
+        <button type="submit" disabled={loading} className={primaryButtonClass}>
+          {loading ? "Verificando..." : "Entrar"}
+        </button>
+        {mode === "cuenta" && (
+          <p className="text-xs text-stone-400 text-center">
+            ¿Olvidaste tu contraseña? Escríbenos y te ayudamos a restablecerla.
+          </p>
+        )}
+      </form>
+    </AuthShell>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-100 px-6">
-      <Suspense>
-        <LoginForm />
-      </Suspense>
-    </div>
+    <Suspense>
+      <LoginForms />
+    </Suspense>
   );
 }

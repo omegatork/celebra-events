@@ -107,11 +107,6 @@ spec:
                 secretKeyRef:
                   name: celebra-auth
                   key: admin-password
-            - name: SESSION_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: celebra-auth
-                  key: session-secret
           volumeMounts:
             - name: data-volume
               mountPath: /app/data

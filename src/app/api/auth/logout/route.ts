@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE } from "@/shared/auth/session";
+import { clearSessionCookie, deleteCurrentSession } from "@/modules/identity/sessions";
 
 export const dynamic = "force-dynamic";
 
 export async function POST() {
+  await deleteCurrentSession().catch(() => {});
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(SESSION_COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 0 });
+  clearSessionCookie(res);
   return res;
 }

@@ -19,8 +19,13 @@ import {
   XCircle
 } from "lucide-react";
 import { EventInvitation, GuestPass, ThemePalette } from "@/lib/types";
+import { newEventTemplate } from "@/lib/eventTemplate";
+import AccessBar, { EventMeta, Me } from "@/components/dashboard/AccessBar";
 
 export default function DashboardPage() {
+  const [me, setMe] = useState<Me | null>(null);
+  const [meta, setMeta] = useState<EventMeta | undefined>(undefined);
+  const [loaded, setLoaded] = useState(false);
   const [events, setEvents] = useState<EventInvitation[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<EventInvitation | null>(null);
   const [guests, setGuests] = useState<GuestPass[]>([]);
@@ -44,11 +49,18 @@ export default function DashboardPage() {
     const data = await res.json();
     const list: EventInvitation[] = data.events || [];
     setEvents(list);
+    setMeta(data.meta);
+    setLoaded(true);
 
     const target =
-      (preferredSlug && list.find((e) => e.slug === preferredSlug)) || selectedEvent || list[0];
+      (preferredSlug && list.find((e) => e.slug === preferredSlug)) ||
+      (selectedEvent && list.find((e) => e.id === selectedEvent.id)) ||
+      list[0];
     if (target) {
       selectEvent(target.slug);
+    } else {
+      setSelectedEvent(null);
+      setGuests([]);
     }
   };
 
@@ -63,9 +75,21 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    loadEvents(params.get("slug") || undefined);
+    fetch("/api/auth/me").then(async (r) => {
+      if (r.status === 401) {
+        window.location.href = "/login?next=/dashboard";
+        return;
+      }
+      setMe(await r.json());
+      loadEvents(params.get("slug") || undefined);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = me?.kind === "admin" ? "/admin/login" : "/";
+  };
 
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,15 +117,7 @@ export default function DashboardPage() {
   };
 
   const handleCreateNewEvent = async () => {
-    const slug = `evento-${Date.now().toString().slice(-4)}`;
-    const template: EventInvitation = {
-      ...(selectedEvent || events[0]),
-      id: `evt-${Date.now()}`,
-      slug,
-      title: " Ana & Luis",
-      subtitle: "¡Nos Casamos!",
-      hosts: "Ana Sofía & Luis Eduardo"
-    };
+    const template = newEventTemplate();
     const res = await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -111,6 +127,8 @@ export default function DashboardPage() {
     if (data.event) {
       await loadEvents(data.event.slug);
       setActiveTab("editor");
+    } else {
+      alert(data.error || "No se pudo crear el evento");
     }
   };
 
@@ -164,10 +182,50 @@ export default function DashboardPage() {
     setTimeout(() => setCopiedToken(null), 2000);
   };
 
-  if (!selectedEvent) {
+  if (!me || !loaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-100 text-stone-600 text-sm">
         Cargando celebra.events...
+      </div>
+    );
+  }
+
+  if (!selectedEvent) {
+    return (
+      <div className="min-h-screen bg-stone-100 text-stone-900 flex flex-col">
+        <header className="bg-white border-b border-stone-200">
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <Link href="/" className="font-serif text-lg font-semibold text-[#1A3C34]">
+              celebra.events
+            </Link>
+            <button
+              type="button"
+              onClick={logout}
+              className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-600 hover:bg-stone-100"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </header>
+        <AccessBar me={me} selectedEvent={null} meta={meta} onChanged={loadEvents} />
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="max-w-md text-center space-y-4">
+            <h1 className="font-serif text-3xl text-[#1A3C34]">Aún no tienes invitaciones</h1>
+            <p className="text-sm text-stone-600">
+              Crea tu primera invitación, o si ya contrataste una, agrégala con su contraseña desde
+              “Agregar invitación a mi cuenta”.
+            </p>
+            {me.kind !== "invitation" && (
+              <button
+                type="button"
+                onClick={handleCreateNewEvent}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1A3C34] text-white text-xs uppercase tracking-widest font-semibold"
+              >
+                <Plus className="w-4 h-4" /> Crear mi invitación
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -210,23 +268,22 @@ export default function DashboardPage() {
               ))}
             </select>
 
-            <button
-              type="button"
-              onClick={handleCreateNewEvent}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs font-semibold hover:bg-amber-100 transition"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Nuevo Evento
-            </button>
+            {me.kind !== "invitation" && (
+              <button
+                type="button"
+                onClick={handleCreateNewEvent}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs font-semibold hover:bg-amber-100 transition"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Nuevo Evento
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={async () => {
-                await fetch("/api/auth/logout", { method: "POST" });
-                window.location.href = "/login";
-              }}
+              onClick={logout}
               className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-600 hover:bg-stone-100"
             >
               Cerrar sesión
@@ -242,6 +299,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </header>
+
+      <AccessBar me={me} selectedEvent={selectedEvent} meta={meta} onChanged={loadEvents} />
 
       {/* Main Workspace */}
       <div className="max-w-7xl mx-auto w-full px-6 py-8 flex-1 space-y-6">
