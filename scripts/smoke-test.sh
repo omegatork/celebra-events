@@ -52,6 +52,21 @@ check "landing shows login/sign-up menu" 1 "$(curl -s "$BASE/" | grep -c 'Inicia
 check "public invitation" 200 "$(code "$BASE/e/sofia-y-mateo")"
 check "login, sign-up, admin login pages" "200 200 200" "$(code "$BASE/login") $(code "$BASE/registro") $(code "$BASE/admin/login")"
 
+echo "Google sign-in"
+redir() { curl -s -o /dev/null -w '%{redirect_url}' "$@"; }
+GOOGLE_ON="$(curl -s "$BASE/api/auth/google/status" | grep -c '"enabled":true')"
+echo "  (Google sign-in is $([[ "$GOOGLE_ON" == 1 ]] && echo enabled || echo disabled) here)"
+if [[ "$GOOGLE_ON" == 1 ]]; then
+  START="$(redir "$BASE/api/auth/google/start?next=//evil.example")"
+  check "start redirects to Google with PKCE" 1 "$(printf '%s' "$START" | grep -c '^https://accounts.google.com/.*code_challenge_method=S256')"
+  check "start sets the short-lived oauth cookie" 1 "$(curl -s -D - -o /dev/null "$BASE/api/auth/google/start" | grep -ic 'set-cookie: celebra_oauth=.*path=/api/auth/google')"
+else
+  check "start without credentials -> login error" 1 "$(redir "$BASE/api/auth/google/start" | grep -c '/login?error=google_off')"
+fi
+check "callback without our state cookie is rejected" 1 "$(redir "$BASE/api/auth/google/callback?code=x&state=forged" | grep -cE '/login\?error=google_(state|off)')"
+check "callback with mismatched state is rejected" 1 "$(redir -b 'celebra_oauth=eyJzdGF0ZSI6ImEiLCJ2ZXJpZmllciI6ImIiLCJub25jZSI6ImMiLCJuZXh0IjoiLyJ9' "$BASE/api/auth/google/callback?code=x&state=other" | grep -cE '/login\?error=google_(state|off)')"
+check "callback never sets a session on failure" 0 "$(curl -s -D - -o /dev/null "$BASE/api/auth/google/callback?code=x&state=forged" | grep -c 'celebra_session=[^;]')"
+
 echo "Locked without a session"
 check "GET /api/events -> 401" 401 "$(code "$BASE/api/events")"
 check "GET /api/events?slug= -> 401" 401 "$(code "$BASE/api/events?slug=sofia-y-mateo")"

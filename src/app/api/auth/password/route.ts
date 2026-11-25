@@ -6,7 +6,10 @@ import { badRequest, forbidden, readJson, requireSession, str } from "@/shared/h
 
 export const dynamic = "force-dynamic";
 
-/** Change own password. Signs out every other device. */
+/**
+ * Change own password, or set a first one for users who signed up with Google
+ * (they have no current password to give). Signs out every other device.
+ */
 export async function POST(req: Request) {
   const s = await requireSession();
   if (s instanceof NextResponse) return s;
@@ -20,7 +23,8 @@ export async function POST(req: Request) {
   }
 
   const user = await findUserById(s.userId);
-  if (!user || !(await verifyPassword(current, user.password_hash))) {
+  if (!user) return forbidden();
+  if (user.password_hash && !(await verifyPassword(current, user.password_hash))) {
     return NextResponse.json({ error: "La contraseña actual no es correcta" }, { status: 401 });
   }
 

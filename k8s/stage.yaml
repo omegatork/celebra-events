@@ -15,6 +15,8 @@ data:
   APP_ENV: "staging"
   NEXT_PUBLIC_APP_ENV: "staging"
   NEXT_PUBLIC_BASE_URL: "http://192.168.100.240"
+  # Public address, read at runtime (Google sign-in redirect URI). Not inlined at build time.
+  APP_BASE_URL: "http://192.168.100.240"
   # Legacy JSON store, read once by scripts/import-json.mjs during the Postgres migration.
   DATA_FILE_PATH: "/app/data/db.json"
 ---
@@ -109,6 +111,19 @@ spec:
                 secretKeyRef:
                   name: celebra-auth
                   key: admin-password
+            # Sign in with Google. Optional: without the celebra-google Secret the button stays hidden.
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: celebra-google
+                  key: client-id
+                  optional: true
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: celebra-google
+                  key: client-secret
+                  optional: true
           volumeMounts:
             - name: data-volume
               mountPath: /app/data

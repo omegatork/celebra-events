@@ -4,8 +4,18 @@ import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import AuthShell, { inputClass, labelClass, postJson, primaryButtonClass, safeNext } from "@/components/AuthShell";
+import GoogleButton from "@/components/GoogleButton";
 
 type Mode = "cuenta" | "invitacion";
+
+const GOOGLE_ERRORS: Record<string, string> = {
+  google: "No pudimos iniciar sesión con Google. Inténtalo de nuevo.",
+  google_cancel: "Cancelaste el inicio de sesión con Google.",
+  google_state: "La sesión con Google expiró. Inténtalo de nuevo.",
+  google_off: "El inicio de sesión con Google no está disponible por ahora.",
+  google_throttle: "Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.",
+  google_conflict: "Ese correo ya está conectado a otra cuenta de Google. Entra con tu contraseña."
+};
 
 function LoginForms() {
   const params = useSearchParams();
@@ -14,7 +24,7 @@ function LoginForms() {
   const [password, setPassword] = useState("");
   const [slug, setSlug] = useState("");
   const [invPassword, setInvPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(GOOGLE_ERRORS[params.get("error") ?? ""] ?? "");
   const [loading, setLoading] = useState(false);
   const next = safeNext(params.get("next"));
 
@@ -66,6 +76,8 @@ function LoginForms() {
         {tab("cuenta", "Con mi cuenta")}
         {tab("invitacion", "Contraseña de invitación")}
       </div>
+
+      {mode === "cuenta" && <GoogleButton next={next} />}
 
       <form onSubmit={submit} className="space-y-4">
         {mode === "cuenta" ? (

@@ -8,6 +8,8 @@ interface Me {
   kind: "user" | "invitation" | "admin";
   email?: string;
   name?: string;
+  hasPassword?: boolean;
+  hasGoogle?: boolean;
 }
 
 export default function AccountPage() {
@@ -33,6 +35,7 @@ export default function AccountPage() {
     setLoading(false);
     setMsg(ok ? { ok, text: "Contraseña actualizada. Cerramos tus otras sesiones." } : { ok, text: data.error });
     if (ok) {
+      setMe((m) => (m ? { ...m, hasPassword: true } : m));
       setCurrent("");
       setNext("");
       setConfirm("");
@@ -59,17 +62,26 @@ export default function AccountPage() {
         </p>
       ) : (
         <form onSubmit={submit} className="space-y-4">
-          <div>
-            <label className={labelClass}>Contraseña actual</label>
-            <input
-              type="password"
-              required
-              autoComplete="current-password"
-              value={current}
-              onChange={(e) => setCurrent(e.target.value)}
-              className={inputClass}
-            />
-          </div>
+          {me?.hasGoogle && (
+            <p className="text-xs text-stone-500 text-center">Tu cuenta está conectada con Google.</p>
+          )}
+          {me?.hasPassword === false ? (
+            <p className="text-sm text-stone-600">
+              Entras con Google. Si quieres, crea también una contraseña para entrar con tu correo.
+            </p>
+          ) : (
+            <div>
+              <label className={labelClass}>Contraseña actual</label>
+              <input
+                type="password"
+                required
+                autoComplete="current-password"
+                value={current}
+                onChange={(e) => setCurrent(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+          )}
           <div>
             <label className={labelClass}>Nueva contraseña (mínimo 10 caracteres)</label>
             <input
@@ -94,7 +106,7 @@ export default function AccountPage() {
           </div>
           {msg && <p className={`text-sm ${msg.ok ? "text-emerald-700" : "text-rose-700"}`}>{msg.text}</p>}
           <button type="submit" disabled={loading} className={primaryButtonClass}>
-            {loading ? "Guardando..." : "Cambiar contraseña"}
+            {loading ? "Guardando..." : me?.hasPassword === false ? "Crear contraseña" : "Cambiar contraseña"}
           </button>
         </form>
       )}

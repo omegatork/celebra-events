@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import AuthShell, { inputClass, labelClass, postJson, primaryButtonClass } from "@/components/AuthShell";
+import GoogleButton from "@/components/GoogleButton";
 
 const MIN = 10;
 
@@ -39,6 +40,7 @@ export default function RegisterPage() {
         </>
       }
     >
+      <GoogleButton />
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label className={labelClass}>Nombre</label>
