@@ -370,10 +370,17 @@ export default async function HomePage() {
           ))}
         </div>
 
-        <p className="text-center text-xs text-stone-500 mt-8">
-          Pago único por evento, sin mensualidades. Pagas solo cuando tu invitación esté lista para
-          compartir.
-        </p>
+        <div className="text-center text-xs text-stone-500 mt-8 space-y-1.5">
+          <p>
+            Pago único por evento, sin mensualidades. Pagas solo cuando tu invitación esté lista
+            para compartir.
+          </p>
+          <p>
+            <strong className="text-stone-700">Formas de pago:</strong> Mercado Pago (tarjeta u
+            OXXO), PayPal o transferencia SPEI.
+          </p>
+          <p>Por el momento no emitimos factura.</p>
+        </div>
       </section>
 
       <footer className="mt-auto border-t border-stone-200 bg-white py-8 px-6 text-center text-xs text-stone-500">
