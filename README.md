@@ -41,6 +41,7 @@ k8s/
 | `/e/<slug>?g=<token>` | One guest group | 128-bit random token (22 chars) |
 | `POST /api/rsvp` | Guests | Needs a valid token; tokenless only if the event enables "Confirmación abierta" |
 | `/login`, `/registro` | Organizers | Email + password accounts; each sign-up gets its own account (tenant) |
+| `/login`, `/registro` → "Continuar con Google" | Organizers | Google sign-in (OIDC + PKCE). Links to an existing user by verified email, otherwise creates user + account. Hidden unless the `celebra-google` Secret exists |
 | `/login?modo=invitacion` | Customers without an account | Event address + invitation password → manage that one event |
 | `/admin/login`, `/admin/usuarios` | Platform staff | Shared admin password (Secret `celebra-auth`); sees all events, generates invitation passwords, resets user passwords |
 
