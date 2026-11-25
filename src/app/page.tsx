@@ -11,12 +11,21 @@ import {
   Sparkles,
   Users
 } from "lucide-react";
-import { getAllEvents } from "@/lib/db";
+import { listDemoEvents } from "@/modules/events/repository";
+import { findDemoGuestToken } from "@/modules/guests/repository";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const events = getAllEvents();
+export default async function HomePage() {
+  // Only demo events are listed publicly; customer events never appear here.
+  const events = await listDemoEvents();
+  const demoTokens: Record<string, string | undefined> = Object.fromEntries(
+    await Promise.all(events.map(async (e) => [e.id, await findDemoGuestToken(e.id)] as const))
+  );
+  const heroDemo = events.find((e) => demoTokens[e.id]) ?? events[0];
+  const heroDemoHref = heroDemo
+    ? `/e/${heroDemo.slug}${demoTokens[heroDemo.id] ? `?g=${demoTokens[heroDemo.id]}` : ""}`
+    : "/dashboard";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-900">
@@ -85,7 +94,7 @@ export default function HomePage() {
               Crear o Editar Invitación Ahora
             </Link>
             <Link
-              href="/e/sofia-y-mateo?g=familia-perez"
+              href={heroDemoHref}
               className="px-7 py-4 rounded-2xl bg-white hover:bg-stone-100 text-stone-800 border border-stone-300 text-xs uppercase tracking-widest font-semibold transition inline-flex items-center gap-2"
             >
               <Eye className="w-4 h-4 text-amber-700" />
@@ -150,9 +159,9 @@ export default function HomePage() {
                 >
                   Abrir Invitación
                 </Link>
-                {evt.slug === "sofia-y-mateo" && (
+                {demoTokens[evt.id] && (
                   <Link
-                    href={`/e/${evt.slug}?g=familia-perez`}
+                    href={`/e/${evt.slug}?g=${demoTokens[evt.id]}`}
                     className="py-3 px-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-center text-xs uppercase tracking-wider font-semibold hover:bg-amber-100 transition"
                   >
                     Ver con Pase VIP (4 Pases)
@@ -192,7 +201,7 @@ export default function HomePage() {
               {
                 icon: MessageCircle,
                 title: "Enlaces Personalizados por WhatsApp",
-                desc: "Cada familia recibe un link único (?g=familia-perez) con su nombre, mesa y número exacto de boletos asignados."
+                desc: "Cada familia recibe un link único e imposible de adivinar con su nombre, mesa y número exacto de boletos asignados."
               },
               {
                 icon: Users,

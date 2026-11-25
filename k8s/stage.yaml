@@ -15,6 +15,7 @@ data:
   APP_ENV: "staging"
   NEXT_PUBLIC_APP_ENV: "staging"
   NEXT_PUBLIC_BASE_URL: "http://192.168.100.240"
+  # Legacy JSON store, read once by scripts/import-json.mjs during the Postgres migration.
   DATA_FILE_PATH: "/app/data/db.json"
 ---
 apiVersion: v1
@@ -63,6 +64,7 @@ spec:
         app: celebra-web
         env: staging
     spec:
+      # The app PVC is node-local (hostpath), so the pod must stay on the node that holds it.
       nodeSelector:
         kubernetes.io/hostname: mllse1
       containers:
@@ -70,27 +72,25 @@ spec:
           image: node:20-alpine
           imagePullPolicy: IfNotPresent
           workingDir: /app/runtime
+          # Interim runtime until container images exist (ADR-0003):
+          # deploy-cluster.sh builds a release into /app/runtime/releases/<ts> and
+          # points the "current" symlink at it; this just starts the current release.
           command:
             - /bin/sh
             - -c
             - |
               set -e
-              mkdir -p /app/data /app/runtime
-              if [ ! -f /app/runtime/server.js ]; then
-                echo "Waiting for initial build or starting build from source..."
-                if [ -f /app/runtime/package.json ]; then
-                  npm install
-                  npm run build
-                  cp -r public .next/standalone/public 2>/dev/null || true
-                  cp -r .next/static .next/standalone/.next/static
-                else
-                  echo "Waiting for source upload..."
-                  while [ ! -f /app/runtime/.next/standalone/server.js ]; do sleep 2; done
-                fi
+              if [ -f /app/runtime/current/.next/standalone/server.js ]; then
+                cd /app/runtime/current/.next/standalone
+              elif [ -f /app/runtime/.next/standalone/server.js ]; then
+                echo "Starting legacy build (pre-releases layout)"
+                cd /app/runtime/.next/standalone
+              else
+                echo "No build yet; waiting for deploy-cluster.sh"
+                while [ ! -f /app/runtime/current/.next/standalone/server.js ]; do sleep 3; done
+                cd /app/runtime/current/.next/standalone
               fi
-              cd /app/runtime/.next/standalone
-              export PORT=3000
-              export HOSTNAME=0.0.0.0
+              export PORT=3000 HOSTNAME=0.0.0.0
               exec node server.js
           ports:
             - containerPort: 3000
@@ -98,16 +98,34 @@ spec:
           envFrom:
             - configMapRef:
                 name: celebra-config
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: celebra-db-app
+                  key: uri
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: celebra-auth
+                  key: admin-password
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: celebra-auth
+                  key: session-secret
           volumeMounts:
             - name: data-volume
               mountPath: /app/data
             - name: app-volume
               mountPath: /app/runtime
+          # "/" works for both the legacy build and new releases. Switch to /api/readyz
+          # once every environment runs the Postgres release.
           readinessProbe:
             httpGet:
-              path: /api/events
+              path: /
               port: 3000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 3
             periodSeconds: 5
           resources:
             requests:

@@ -37,6 +37,10 @@ export default function DashboardPage() {
 
   const loadEvents = async (preferredSlug?: string) => {
     const res = await fetch("/api/events");
+    if (res.status === 401) {
+      window.location.href = "/login?next=/dashboard";
+      return;
+    }
     const data = await res.json();
     const list: EventInvitation[] = data.events || [];
     setEvents(list);
@@ -74,7 +78,10 @@ export default function DashboardPage() {
         body: JSON.stringify(selectedEvent)
       });
       const data = await res.json();
-      if (data.event) {
+      if (!res.ok) {
+        setSaveBanner(`Error: ${data.error || "no se pudo guardar"}`);
+        setTimeout(() => setSaveBanner(""), 5000);
+      } else if (data.event) {
         setSelectedEvent(data.event);
         setSaveBanner("¡Cambios guardados y publicados en la invitación!");
         setTimeout(() => setSaveBanner(""), 3500);
@@ -111,7 +118,7 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!selectedEvent || !newGuestName.trim()) return;
 
-    const res = await fetch("/api/rsvp", {
+    const res = await fetch("/api/guests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -119,9 +126,7 @@ export default function DashboardPage() {
         name: newGuestName.trim(),
         phone: newGuestPhone.trim(),
         passesAllocated: Number(newGuestPasses),
-        passesConfirmed: 0,
-        tableNumber: newGuestTable.trim() || "Por asignar",
-        status: "pending"
+        tableNumber: newGuestTable.trim() || "Por asignar"
       })
     });
     if (res.ok) {
@@ -134,11 +139,10 @@ export default function DashboardPage() {
 
   const handleDeleteGuest = async (guestId: string) => {
     if (!selectedEvent) return;
-    await fetch("/api/rsvp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "delete", id: guestId })
-    });
+    await fetch(
+      `/api/guests?eventId=${encodeURIComponent(selectedEvent.id)}&id=${encodeURIComponent(guestId)}`,
+      { method: "DELETE" }
+    );
     selectEvent(selectedEvent.slug);
   };
 
@@ -217,6 +221,16 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
+                window.location.href = "/login";
+              }}
+              className="px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-600 hover:bg-stone-100"
+            >
+              Cerrar sesión
+            </button>
             <Link
               href={`/e/${selectedEvent.slug}`}
               target="_blank"
@@ -808,7 +822,8 @@ export default function DashboardPage() {
                       { key: "showGallery", label: "Galería Fotográfica" },
                       { key: "showDressCode", label: "Código de Vestimenta" },
                       { key: "showGiftRegistry", label: "Mesa de Regalos & CLABE" },
-                      { key: "showGuestbook", label: "Libro de Firmas Digital" }
+                      { key: "showGuestbook", label: "Libro de Firmas Digital" },
+                      { key: "allowOpenRsvp", label: "Confirmación abierta (sin enlace personal)" }
                     ] as const
                   ).map((sec) => (
                     <label
@@ -818,7 +833,7 @@ export default function DashboardPage() {
                       <span className="font-medium text-stone-700">{sec.label}</span>
                       <input
                         type="checkbox"
-                        checked={selectedEvent.sections[sec.key]}
+                        checked={Boolean(selectedEvent.sections[sec.key])}
                         onChange={(e) =>
                           setSelectedEvent({
                             ...selectedEvent,

@@ -1,31 +1,31 @@
 import { notFound } from "next/navigation";
-import { getEventBySlug, getGuestByToken, getGuestsByEventId } from "@/lib/db";
+import { getEventBySlug } from "@/modules/events/repository";
+import { findGuestByToken, listGuestbook, toPublicGuest } from "@/modules/guests/repository";
 import InvitationView from "@/components/InvitationView";
 
 export const dynamic = "force-dynamic";
 
-export default function EventInvitationPage({
+export default async function EventInvitationPage({
   params,
   searchParams
 }: {
   params: { slug: string };
   searchParams: { g?: string; preview?: string };
 }) {
-  const event = getEventBySlug(params.slug);
+  const event = await getEventBySlug(params.slug);
   if (!event) {
     notFound();
   }
 
-  const initialGuest = searchParams.g ? getGuestByToken(event.id, searchParams.g) || null : null;
-  const allConfirmedMessages = getGuestsByEventId(event.id).filter(
-    (g) => g.status === "confirmed" && g.message
-  );
+  const guest = searchParams.g ? await findGuestByToken(event.id, searchParams.g) : undefined;
+  // Only names + messages go to the browser, never other guests' tokens or phones.
+  const guestbook = event.sections.showGuestbook ? await listGuestbook(event.id) : [];
 
   return (
     <InvitationView
       event={event}
-      initialGuest={initialGuest}
-      allConfirmedMessages={allConfirmedMessages}
+      initialGuest={guest ? toPublicGuest(guest) : null}
+      allConfirmedMessages={guestbook}
       isPreview={searchParams.preview === "1"}
     />
   );

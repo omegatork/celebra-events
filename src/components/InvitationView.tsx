@@ -19,7 +19,7 @@ import {
   VolumeX,
   Wine
 } from "lucide-react";
-import { EventInvitation, GuestPass, ThemePalette } from "@/lib/types";
+import { EventInvitation, GuestbookEntry, GuestPass, ThemePalette } from "@/lib/types";
 
 const THEME_STYLES: Record<
   ThemePalette,
@@ -79,7 +79,7 @@ const THEME_STYLES: Record<
 interface InvitationViewProps {
   event: EventInvitation;
   initialGuest?: GuestPass | null;
-  allConfirmedMessages?: GuestPass[];
+  allConfirmedMessages?: GuestbookEntry[];
   isPreview?: boolean;
 }
 
@@ -234,13 +234,11 @@ export default function InvitationView({
     e.preventDefault();
     setIsSavingRsvp(true);
     try {
+      // The server only trusts the token; allocation and table come from the database.
       const payload = {
-        id: guest?.id,
-        eventId: event.id,
-        name: guest ? guest.name : guestNameInput,
+        slug: event.slug,
         token: guest?.token,
-        tableNumber: guest?.tableNumber || "Por asignar",
-        passesAllocated: guest ? guest.passesAllocated : passesSelected,
+        name: guest ? undefined : guestNameInput,
         passesConfirmed: rsvpStatus === "confirmed" ? passesSelected : 0,
         status: rsvpStatus,
         dietaryNotes,
@@ -256,6 +254,8 @@ export default function InvitationView({
       if (data.guest) {
         setGuest(data.guest);
         setRsvpSubmitted(true);
+      } else if (data.error) {
+        alert(data.error);
       }
     } finally {
       setIsSavingRsvp(false);
@@ -687,6 +687,10 @@ export default function InvitationView({
                 Modificar mi confirmación
               </button>
             </div>
+          ) : !guest && !event.sections.allowOpenRsvp ? (
+            <p className="text-center text-sm text-stone-600">
+              Para confirmar tu asistencia, abre el enlace personalizado que recibiste por WhatsApp.
+            </p>
           ) : (
             <form onSubmit={handleRsvpSubmit} className="space-y-5">
               {!guest && (

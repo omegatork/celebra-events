@@ -1,0 +1,203 @@
+{
+  "events": [
+    {
+      "id": "evt-boda-sofia-mateo",
+      "slug": "sofia-y-mateo",
+      "type": "boda",
+      "title": "Sofía & Mateo",
+      "subtitle": "¡Nos Casamos!",
+      "hosts": "Sofía Hernández & Mateo Villarreal",
+      "parentsText": "Con la bendición de Dios y de nuestros padres:\nSr. Carlos Hernández & Sra. Elena Gómez\nSr. Roberto Villarreal & Sra. Lucía Mendoza",
+      "dateISO": "2027-03-20T17:00:00-06:00",
+      "coverImageUrl": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=900&q=80"
+      ],
+      "musicTitle": "Can't Help Falling in Love — Instrumental",
+      "theme": "emerald-gold",
+      "ceremonyVenue": "Parroquia de San Miguel Arcángel",
+      "ceremonyAddress": "Calle Principal S/N, Centro Histórico, San Miguel de Allende, Gto.",
+      "ceremonyTime": "17:00 HRS",
+      "ceremonyMapUrl": "https://maps.google.com/?q=Parroquia+de+San+Miguel+Arcangel",
+      "receptionVenue": "Hacienda Los Picachos",
+      "receptionAddress": "Carr. San Miguel de Allende - Querétaro Km 3, Gto.",
+      "receptionTime": "19:30 HRS",
+      "receptionMapUrl": "https://maps.google.com/?q=San+Miguel+de+Allende",
+      "dressCode": "Riguroso Formal / Etiqueta",
+      "dressCodeNotes": "Mujeres: Vestido largo (evitar blanco y beige). Hombres: Smoking o traje oscuro.",
+      "giftRegistryText": "Su presencia es nuestro mejor regalo. Si desean tener un detalle con nosotros, ponemos a su disposición nuestra mesa de regalos y lluvia de sobres digital.",
+      "bankDetails": {
+        "bank": "BBVA México",
+        "beneficiary": "Sofía Hernández / Mateo Villarreal",
+        "clabe": "012 180 01548920341 8",
+        "concept": "Regalo Boda Sofía y Mateo"
+      },
+      "storeRegistryUrl": "https://mesaderegalos.liverpool.com.mx",
+      "quote": "«Te amo sin saber cómo, ni cuándo, ni de dónde, te amo directamente sin problemas ni orgullo.» — Pablo Neruda",
+      "itinerary": [
+        {
+          "id": "it-1",
+          "time": "17:00 hrs",
+          "title": "Ceremonia Religiosa",
+          "location": "Parroquia de San Miguel Arcángel",
+          "icon": "church"
+        },
+        {
+          "id": "it-2",
+          "time": "19:00 hrs",
+          "title": "Cóctel de Bienvenida",
+          "location": "Jardín Central Hacienda Los Picachos",
+          "icon": "cheers"
+        },
+        {
+          "id": "it-3",
+          "time": "20:30 hrs",
+          "title": "Banquete & Brindis",
+          "location": "Salón Principal",
+          "icon": "dinner"
+        },
+        {
+          "id": "it-4",
+          "time": "22:00 hrs",
+          "title": "Primer Baile & Fiesta",
+          "location": "Pista Central",
+          "icon": "party"
+        }
+      ],
+      "sections": {
+        "showCountdown": true,
+        "showItinerary": true,
+        "showGallery": true,
+        "showDressCode": true,
+        "showGiftRegistry": true,
+        "showGuestbook": true
+      }
+    },
+    {
+      "id": "evt-xv-valeria",
+      "slug": "xv-valeria",
+      "type": "xv",
+      "title": "Valeria",
+      "subtitle": "Mis XV Años",
+      "hosts": "Valeria Montemayor",
+      "parentsText": "Con el amor de mis padres:\nAlejandro Montemayor & Mariana Garza\nY mis padrinos:\nLuis Fernando Garza & Claudia Trevino",
+      "dateISO": "2027-05-15T18:30:00-06:00",
+      "coverImageUrl": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1400&q=80",
+      "galleryUrls": [
+        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=900&q=80",
+        "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=900&q=80"
+      ],
+      "musicTitle": "A Thousand Years — Piano Strings",
+      "theme": "rose-quartz",
+      "ceremonyVenue": "Capilla de Nuestra Señora de Guadalupe",
+      "ceremonyAddress": "Av. Reforma 420, Lomas de Chapultepec, CDMX",
+      "ceremonyTime": "18:30 HRS",
+      "ceremonyMapUrl": "https://maps.google.com",
+      "receptionVenue": "Salón Imperial Las Lomas",
+      "receptionAddress": "Paseo de las Palmas 890, CDMX",
+      "receptionTime": "20:00 HRS",
+      "receptionMapUrl": "https://maps.google.com",
+      "dressCode": "Formal de Noche",
+      "dressCodeNotes": "Reservado el color Rosa Cuarzo y Dorado para la quinceañera.",
+      "giftRegistryText": "El mejor regalo es compartir esta noche mágica contigo. Habrá lluvia de sobres en recepción o vía transferencia.",
+      "bankDetails": {
+        "bank": "Santander",
+        "beneficiary": "Mariana Garza (XV Valeria)",
+        "clabe": "014 180 65890123456 2",
+        "concept": "Regalo XV Valeria"
+      },
+      "storeRegistryUrl": "https://www.elpalaciodehierro.com",
+      "quote": "«Hay momentos inolvidables que se atesoran en el corazón para siempre; por esa razón quiero que compartas conmigo esta noche tan especial.»",
+      "itinerary": [
+        {
+          "id": "xv-1",
+          "time": "18:30 hrs",
+          "title": "Misa de Acción de Gracias",
+          "location": "Capilla de Guadalupe",
+          "icon": "church"
+        },
+        {
+          "id": "xv-2",
+          "time": "20:00 hrs",
+          "title": "Recepción & Alfombra Roja",
+          "location": "Salón Imperial",
+          "icon": "cheers"
+        },
+        {
+          "id": "xv-3",
+          "time": "21:30 hrs",
+          "title": "Vals & Brindis",
+          "location": "Pista Principal",
+          "icon": "party"
+        }
+      ],
+      "sections": {
+        "showCountdown": true,
+        "showItinerary": true,
+        "showGallery": true,
+        "showDressCode": true,
+        "showGiftRegistry": true,
+        "showGuestbook": true
+      }
+    }
+  ],
+  "guests": [
+    {
+      "id": "gst-1",
+      "eventId": "evt-boda-sofia-mateo",
+      "name": "Familia Pérez Garza",
+      "token": "familia-perez",
+      "phone": "5215512345678",
+      "tableNumber": "Mesa 1 (Principal)",
+      "passesAllocated": 4,
+      "passesConfirmed": 4,
+      "status": "confirmed",
+      "dietaryNotes": "1 menú vegetariano",
+      "message": "¡Muchísimas felicidades Sofía y Mateo! Ahí estaremos sin falta para celebrar con ustedes.",
+      "updatedAt": "2026-11-24T12:00:00.000Z"
+    },
+    {
+      "id": "gst-2",
+      "eventId": "evt-boda-sofia-mateo",
+      "name": "Alejandro Morales & Acompañante",
+      "token": "alejandro-morales",
+      "phone": "5215587654321",
+      "tableNumber": "Mesa 4",
+      "passesAllocated": 2,
+      "passesConfirmed": 0,
+      "status": "pending",
+      "dietaryNotes": "",
+      "message": ""
+    },
+    {
+      "id": "gst-3",
+      "eventId": "evt-boda-sofia-mateo",
+      "name": "Dra. Camila Domínguez",
+      "token": "camila-dominguez",
+      "phone": "5215599887766",
+      "tableNumber": "Mesa 3",
+      "passesAllocated": 2,
+      "passesConfirmed": 2,
+      "status": "confirmed",
+      "dietaryNotes": "Sin gluten",
+      "message": "¡Qué emoción verlos dar este gran paso! Nos vemos en San Miguel.",
+      "updatedAt": "2026-11-24T14:30:00.000Z"
+    },
+    {
+      "id": "gst-4",
+      "eventId": "evt-boda-sofia-mateo",
+      "name": "Familia Rodríguez Silva",
+      "token": "familia-rodriguez",
+      "phone": "5215544332211",
+      "tableNumber": "Mesa 6",
+      "passesAllocated": 5,
+      "passesConfirmed": 0,
+      "status": "declined",
+      "dietaryNotes": "",
+      "message": "Les mandamos un abrazo enorme, lamentablemente estaremos fuera del país en esa fecha.",
+      "updatedAt": "2026-11-24T16:00:00.000Z"
+    }
+  ]
+}

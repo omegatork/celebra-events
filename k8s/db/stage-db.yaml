@@ -1,0 +1,23 @@
+# PostgreSQL for stage, managed by the CloudNativePG operator (cnpg-system).
+# Creates Secret "celebra-db-app" (keys: uri, username, password, host, dbname...).
+# Service for the app: celebra-db-rw.celebra-stage.svc:5432
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: celebra-db
+  namespace: celebra-stage
+spec:
+  instances: 1
+  storage:
+    size: 2Gi
+    storageClass: microk8s-hostpath
+  bootstrap:
+    initdb:
+      database: celebra
+      owner: celebra
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "256Mi"
+    limits:
+      memory: "512Mi"

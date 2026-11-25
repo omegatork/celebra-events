@@ -29,9 +29,17 @@ export interface GuestPass {
   updatedAt?: string;
 }
 
+/** Public guestbook entry: only what is safe to show to every visitor. */
+export interface GuestbookEntry {
+  id: string;
+  name: string;
+  message: string;
+}
+
 export interface EventInvitation {
   id: string;
   slug: string;
+  isDemo?: boolean;
   type: EventType;
   title: string;
   subtitle: string;
@@ -69,10 +77,7 @@ export interface EventInvitation {
     showDressCode: boolean;
     showGiftRegistry: boolean;
     showGuestbook: boolean;
+    /** Allow RSVP without a personalized guest link. Off by default. */
+    allowOpenRsvp?: boolean;
   };
-}
-
-export interface DatabaseSchema {
-  events: EventInvitation[];
-  guests: GuestPass[];
 }
