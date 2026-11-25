@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "celebra.events — Plataforma de Invitaciones Digitales Interactivas",
   description:
-    "Crea invitaciones digitales interactivas en celebra.events para Bodas, XV Años y Eventos con pases QR, confirmación RSVP en tiempo real y envío por WhatsApp."
+    "Crea invitaciones digitales interactivas en celebra.events para Bodas, XV Años y Eventos con pases personalizados, confirmación RSVP en tiempo real y envío por WhatsApp."
 };
 
 export default function RootLayout({

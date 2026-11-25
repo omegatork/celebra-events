@@ -12,7 +12,7 @@ import {
   MapPin,
   Music,
   PartyPopper,
-  QrCode,
+  Ticket,
   Sparkles,
   Utensils,
   Volume2,
@@ -622,7 +622,7 @@ export default function InvitationView({
         )}
       </section>
 
-      {/* Real-Time RSVP Confirmation & QR Digital Pass */}
+      {/* Real-Time RSVP Confirmation & Digital Pass (real QR codes are on the roadmap) */}
       <section id="rsvp" className="max-w-2xl mx-auto px-6 py-12">
         <div className={`rounded-3xl p-8 sm:p-10 ${theme.cardBg} border ${theme.border} shadow-md`}>
           <div className="text-center mb-8 space-y-2">
@@ -635,8 +635,7 @@ export default function InvitationView({
               </p>
             ) : (
               <p className="text-sm text-stone-600">
-                Por favor confirma tu asistencia para preparar tu recepción y generar tu código QR de
-                acceso.
+                Por favor confirma tu asistencia para que podamos preparar tu recepción.
               </p>
             )}
           </div>
@@ -655,12 +654,11 @@ export default function InvitationView({
                   className={`p-6 rounded-2xl ${theme.bg} border-2 border-dashed ${theme.border} max-w-sm mx-auto space-y-4`}
                 >
                   <div className="flex items-center justify-center gap-2 text-xs uppercase tracking-widest text-stone-500">
-                    <QrCode className="w-4 h-4" />
-                    Pase Digital de Acceso
+                    <Ticket className="w-4 h-4" />
+                    Pase Digital
                   </div>
-                  {/* Self-contained SVG QR-style Pass Visual */}
                   <div className="w-36 h-36 mx-auto bg-white p-3 rounded-xl border border-stone-200 flex flex-col items-center justify-center">
-                    <QrCode className={`w-24 h-24 ${theme.primaryText}`} />
+                    <Ticket className={`w-20 h-20 ${theme.primaryText}`} />
                     <span className="text-[10px] font-mono text-stone-400 mt-1">
                       #{guest.token.toUpperCase().slice(0, 12)}
                     </span>
@@ -780,7 +778,7 @@ export default function InvitationView({
                 disabled={isSavingRsvp}
                 className={`w-full py-4 rounded-xl text-xs uppercase tracking-widest font-semibold transition shadow-md ${theme.primary}`}
               >
-                {isSavingRsvp ? "Guardando Confirmación..." : "Confirmar y Generar Pase QR"}
+                {isSavingRsvp ? "Guardando Confirmación..." : "Confirmar Asistencia"}
               </button>
             </form>
           )}

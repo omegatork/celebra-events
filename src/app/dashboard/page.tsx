@@ -377,7 +377,7 @@ export default function DashboardPage() {
                 <p className="font-serif text-3xl font-bold text-emerald-800 mt-1">
                   {totalPassesConfirmed}
                 </p>
-                <p className="text-xs text-stone-500 mt-1">Con código QR generado</p>
+                <p className="text-xs text-stone-500 mt-1">Con pase digital</p>
               </div>
 
               <div className="p-5 rounded-2xl bg-white border border-amber-200 shadow-sm">

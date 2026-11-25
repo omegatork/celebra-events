@@ -1,12 +1,12 @@
 import React from "react";
 import Link from "next/link";
 import {
+  CalendarClock,
   CheckCircle2,
   Eye,
   Heart,
-  Layers,
   MessageCircle,
-  QrCode,
+  ShieldCheck,
   Sliders,
   Sparkles,
   Users
@@ -17,6 +17,54 @@ import { getSession } from "@/modules/identity/sessions";
 import AuthMenu from "@/components/AuthMenu";
 
 export const dynamic = "force-dynamic";
+
+// Launch pricing. Only list features that exist today (no QR, uploads or online checkout yet).
+const PLANS = [
+  {
+    name: "Prueba Gratis",
+    tagline: "Diseña sin compromiso",
+    price: "$0",
+    priceNote: "MXN",
+    featured: false,
+    cta: "Crear mi invitación",
+    items: [
+      "Crea tu cuenta y tu invitación",
+      "Usa el editor completo y previsualiza el resultado",
+      "Prueba la invitación como la verán tus invitados",
+      "Paga solo si te gusta y quieres compartirla"
+    ]
+  },
+  {
+    name: "Esencial",
+    tagline: "Invitación Interactiva",
+    price: "$299",
+    priceNote: "MXN / pago único",
+    featured: false,
+    cta: "Comenzar con Esencial",
+    items: [
+      "Sobre animado con sello de lacre y música ambiental",
+      "Cuenta regresiva e itinerario",
+      "Ubicaciones con botón a Google Maps y Waze",
+      "Código de vestimenta, mesa de regalos y CLABE copiable",
+      "Confirmación de asistencia con alergias y mensajes"
+    ]
+  },
+  {
+    name: "Completo",
+    tagline: "Invitación + Gestión de Invitados",
+    price: "$449",
+    priceNote: "MXN / pago único",
+    featured: true,
+    cta: "Comenzar con Completo",
+    items: [
+      "Todo lo incluido en Esencial",
+      "Pase personalizado por familia con su nombre y boletos asignados",
+      "Asignación de mesa por familia",
+      "Enlace de WhatsApp listo para enviar a cada invitado",
+      "Lista de invitados y confirmaciones en tiempo real"
+    ]
+  }
+];
 
 export default async function HomePage() {
   const signedIn = !!(await getSession().catch(() => null));
@@ -72,7 +120,7 @@ export default async function HomePage() {
         <div className="max-w-5xl mx-auto text-center space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100/80 border border-amber-300/60 text-amber-950 text-xs font-medium">
             <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-            <span>Plataforma SaaS de Invitaciones Digitales Interactivas</span>
+            <span>Invitaciones Digitales Interactivas</span>
           </div>
 
           <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl tracking-tight text-[#1A3C34] max-w-4xl mx-auto leading-[1.1]">
@@ -80,8 +128,8 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-base sm:text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
-            Diseña tu invitación con sello de lacre interactivo, música, cuenta regresiva, mesa de
-            regalos y pases personalizados por WhatsApp con código QR de acceso.
+            Diseña tu invitación con sello de lacre interactivo, música ambiental, cuenta regresiva,
+            mesa de regalos y pases personalizados por familia para enviar por WhatsApp.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
@@ -113,7 +161,7 @@ export default async function HomePage() {
           </h2>
           <p className="text-sm text-stone-600 max-w-xl mx-auto">
             Abre cualquiera de las invitaciones para probar el sobre con sello de cera, la música
-            ambiental y la confirmación RSVP con código QR.
+            ambiental y la confirmación de asistencia.
           </p>
         </div>
 
@@ -177,7 +225,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Core SaaS Features (Matching Invitio & InvitameOK) */}
+      {/* Features: list only what the product actually does today */}
       <section id="caracteristicas" className="bg-white border-y border-stone-200/80 py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14 space-y-2">
@@ -185,7 +233,7 @@ export default async function HomePage() {
               Todo en un solo lugar
             </p>
             <h2 className="font-serif text-3xl sm:text-4xl text-[#1A3C34]">
-              Funcionalidades de Nivel Evento Completo
+              Lo que incluye tu invitación
             </h2>
           </div>
 
@@ -207,19 +255,19 @@ export default async function HomePage() {
                 desc: "Tus invitados confirman asistencia, indican alergias alimentarias y dejan felicitaciones en el libro de firmas digital."
               },
               {
-                icon: QrCode,
-                title: "Pase QR para Recepción",
-                desc: "Al confirmar, la invitación genera automáticamente un boleto QR personalizado para el control de acceso en la entrada."
+                icon: CalendarClock,
+                title: "Cuenta Regresiva e Itinerario",
+                desc: "Tus invitados ven cuánto falta para el gran día y el programa completo: ceremonia, recepción, cena y fiesta."
               },
               {
                 icon: Sliders,
-                title: "Editor Visual Self-Serve",
-                desc: "Personaliza paletas de colores, fotos, itinerario, ubicaciones con Google Maps/Waze y CLABE de lluvia de sobres."
+                title: "Editor Fácil de Usar",
+                desc: "Personaliza colores, textos, itinerario, ubicaciones con Google Maps/Waze y la CLABE para lluvia de sobres."
               },
               {
-                icon: Layers,
-                title: "Listo para tu Clúster Kubernetes",
-                desc: "Arquitectura contenedorizada con ambientes separados de Stage (.240) y Producción (.241) sobre MetalLB."
+                icon: ShieldCheck,
+                title: "Privacidad para tus Invitados",
+                desc: "Cada familia ve solo su propio pase. Nadie más puede ver la lista de invitados ni sus teléfonos."
               }
             ].map((feat) => (
               <div
@@ -248,70 +296,84 @@ export default async function HomePage() {
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="rounded-3xl p-8 bg-white border border-stone-200 space-y-6">
-            <div>
-              <span className="text-xs uppercase tracking-widest text-stone-400">Paquete Esencial</span>
-              <h3 className="font-serif text-2xl text-stone-900 mt-1">Invitación Interactiva</h3>
-              <p className="text-3xl font-serif font-bold text-[#1A3C34] mt-3">
-                $890 <span className="text-sm font-sans font-normal text-stone-500">MXN / pago único</span>
-              </p>
-            </div>
-            <ul className="space-y-3 text-sm text-stone-600">
-              {[
-                "Sobre animado y música de fondo",
-                "Cuenta regresiva e itinerario",
-                "Ubicaciones con botón a Google Maps y Waze",
-                "Mesa de regalos y CLABE copiable",
-                "Confirmación libre de invitados"
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/registro"
-              className="block w-full py-3.5 rounded-xl border border-stone-300 text-center text-xs uppercase tracking-widest font-semibold hover:bg-stone-100 transition"
-            >
-              Comenzar en el Editor
-            </Link>
-          </div>
-
-          <div className="rounded-3xl p-8 bg-[#1A3C34] text-white border border-amber-300/30 shadow-xl space-y-6 relative">
-            <span className="absolute top-6 right-6 px-3 py-1 rounded-full bg-amber-400 text-stone-950 text-[10px] font-bold uppercase tracking-widest">
-              Más Popular
-            </span>
-            <div>
-              <span className="text-xs uppercase tracking-widest text-amber-200">Evento Completo</span>
-              <h3 className="font-serif text-2xl mt-1">Invitación + Gestión VIP & QR</h3>
-              <p className="text-3xl font-serif font-bold text-amber-200 mt-3">
-                $1,490 <span className="text-sm font-sans font-normal text-stone-300">MXN / pago único</span>
-              </p>
-            </div>
-            <ul className="space-y-3 text-sm text-stone-200">
-              {[
-                "Todo lo incluido en el Paquete Esencial",
-                "Pases personalizados con nombre y boletos asignados",
-                "Envío 1-clic por WhatsApp desde el Dashboard",
-                "Generación de código QR por familia para recepción",
-                "Control de mesas, alergias y libro de firmas digital"
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-amber-300 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/registro"
-              className="block w-full py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 text-center text-xs uppercase tracking-widest font-bold transition"
-            >
-              Probar Evento Completo
-            </Link>
-          </div>
+        <div className="flex justify-center mb-10">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100/80 border border-amber-300/60 text-amber-950 text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+            Precio de lanzamiento para los primeros 20 eventos
+          </span>
         </div>
+
+        <div className="grid lg:grid-cols-3 gap-6 items-stretch">
+          {PLANS.map((plan) => (
+            <div
+              key={plan.name}
+              className={`rounded-3xl p-8 flex flex-col gap-6 relative ${
+                plan.featured
+                  ? "bg-[#1A3C34] text-white border border-amber-300/30 shadow-xl"
+                  : "bg-white border border-stone-200"
+              }`}
+            >
+              {plan.featured && (
+                <span className="absolute top-6 right-6 px-3 py-1 rounded-full bg-amber-400 text-stone-950 text-[10px] font-bold uppercase tracking-widest">
+                  Recomendado
+                </span>
+              )}
+              <div>
+                <span
+                  className={`text-xs uppercase tracking-widest ${
+                    plan.featured ? "text-amber-200" : "text-stone-400"
+                  }`}
+                >
+                  {plan.name}
+                </span>
+                <h3 className={`font-serif text-2xl mt-1 ${plan.featured ? "" : "text-stone-900"}`}>
+                  {plan.tagline}
+                </h3>
+                <p
+                  className={`text-3xl font-serif font-bold mt-3 ${
+                    plan.featured ? "text-amber-200" : "text-[#1A3C34]"
+                  }`}
+                >
+                  {plan.price}{" "}
+                  <span
+                    className={`text-sm font-sans font-normal ${
+                      plan.featured ? "text-stone-300" : "text-stone-500"
+                    }`}
+                  >
+                    {plan.priceNote}
+                  </span>
+                </p>
+              </div>
+              <ul className={`space-y-3 text-sm flex-1 ${plan.featured ? "text-stone-200" : "text-stone-600"}`}>
+                {plan.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <CheckCircle2
+                      className={`w-4 h-4 mt-0.5 shrink-0 ${
+                        plan.featured ? "text-amber-300" : "text-emerald-700"
+                      }`}
+                    />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/registro"
+                className={`block w-full py-3.5 rounded-xl text-center text-xs uppercase tracking-widest font-semibold transition ${
+                  plan.featured
+                    ? "bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold"
+                    : "border border-stone-300 hover:bg-stone-100"
+                }`}
+              >
+                {plan.cta}
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-center text-xs text-stone-500 mt-8">
+          Pago único por evento, sin mensualidades. Pagas solo cuando tu invitación esté lista para
+          compartir.
+        </p>
       </section>
 
       <footer className="mt-auto border-t border-stone-200 bg-white py-8 px-6 text-center text-xs text-stone-500">
