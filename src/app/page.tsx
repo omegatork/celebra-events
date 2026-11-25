@@ -377,7 +377,7 @@ export default async function HomePage() {
       </section>
 
       <footer className="mt-auto border-t border-stone-200 bg-white py-8 px-6 text-center text-xs text-stone-500">
-        celebra.events • Plataforma de Invitaciones Digitales Interactivas • Listo para Kubernetes
+        celebra.events • Invitaciones Digitales Interactivas • México & LatAm
       </footer>
     </div>
   );
