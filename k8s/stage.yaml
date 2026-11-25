@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: celebra-stage
+  labels:
+    app.kubernetes.io/name: celebra-events
+    app.kubernetes.io/environment: staging
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: celebra-config
+  namespace: celebra-stage
+data:
+  APP_ENV: "staging"
+  NEXT_PUBLIC_APP_ENV: "staging"
+  NEXT_PUBLIC_BASE_URL: "http://192.168.100.240"
+  DATA_FILE_PATH: "/app/data/db.json"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: celebra-data-pvc
+  namespace: celebra-stage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: celebra-app-pvc
+  namespace: celebra-stage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celebra-web
+  namespace: celebra-stage
+  labels:
+    app: celebra-web
+    env: staging
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: celebra-web
+      env: staging
+  template:
+    metadata:
+      labels:
+        app: celebra-web
+        env: staging
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: mllse1
+      containers:
+        - name: celebra-web
+          image: node:20-alpine
+          imagePullPolicy: IfNotPresent
+          workingDir: /app/runtime
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              mkdir -p /app/data /app/runtime
+              if [ ! -f /app/runtime/server.js ]; then
+                echo "Waiting for initial build or starting build from source..."
+                if [ -f /app/runtime/package.json ]; then
+                  npm install
+                  npm run build
+                  cp -r public .next/standalone/public 2>/dev/null || true
+                  cp -r .next/static .next/standalone/.next/static
+                else
+                  echo "Waiting for source upload..."
+                  while [ ! -f /app/runtime/.next/standalone/server.js ]; do sleep 2; done
+                fi
+              fi
+              cd /app/runtime/.next/standalone
+              export PORT=3000
+              export HOSTNAME=0.0.0.0
+              exec node server.js
+          ports:
+            - containerPort: 3000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: celebra-config
+          volumeMounts:
+            - name: data-volume
+              mountPath: /app/data
+            - name: app-volume
+              mountPath: /app/runtime
+          readinessProbe:
+            httpGet:
+              path: /api/events
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1500m"
+              memory: "1536Mi"
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: celebra-data-pvc
+        - name: app-volume
+          persistentVolumeClaim:
+            claimName: celebra-app-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: celebra-lb
+  namespace: celebra-stage
+  annotations:
+    metallb.io/loadBalancerIPs: "192.168.100.240"
+spec:
+  type: LoadBalancer
+  selector:
+    app: celebra-web
+    env: staging
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000
