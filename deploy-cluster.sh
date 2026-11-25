@@ -27,7 +27,7 @@ echo "==> [1/5] Applying $MANIFEST"
 kubectl get secret celebra-db-app -n "$NAMESPACE" >/dev/null \
   || { echo "Missing secret celebra-db-app. Apply k8s/db/${ENV_TARGET}-db.yaml first."; exit 1; }
 kubectl get secret celebra-auth -n "$NAMESPACE" >/dev/null \
-  || { echo "Missing secret celebra-auth (admin-password, session-secret). See README."; exit 1; }
+  || { echo "Missing secret celebra-auth (admin-password). See README."; exit 1; }
 kubectl apply -f "$MANIFEST"
 
 echo "==> [2/5] Waiting for a running pod"
@@ -48,7 +48,7 @@ echo "    pod: $POD"
 echo "==> [3/5] Uploading release $RELEASE"
 mkdir -p public
 # COPYFILE_DISABLE + --no-xattrs: stop macOS tar from adding "._*" AppleDouble files.
-COPYFILE_DISABLE=1 tar --no-xattrs -czf "$TARBALL" package.json next.config.mjs tsconfig.json tailwind.config.ts postcss.config.js \
+COPYFILE_DISABLE=1 tar --no-xattrs -czf "$TARBALL" package.json package-lock.json next.config.mjs tsconfig.json tailwind.config.ts postcss.config.js \
   public src migrations scripts
 kubectl cp "$TARBALL" "$NAMESPACE/$POD:/tmp/release.tar.gz"
 rm -f "$TARBALL"
@@ -60,7 +60,7 @@ kubectl exec -n "$NAMESPACE" "$POD" -- sh -c "
   mkdir -p \$R
   tar -xzf /tmp/release.tar.gz -C \$R && rm -f /tmp/release.tar.gz
   cd \$R
-  npm install --no-audit --no-fund
+  npm ci --no-audit --no-fund
   NEXT_PUBLIC_APP_ENV=$BUILD_ENV npm run build
   cp -r public .next/standalone/public
   cp -r .next/static .next/standalone/.next/static

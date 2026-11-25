@@ -14,12 +14,14 @@ Next.js 14 (App Router, standalone) · PostgreSQL 18 (CloudNativePG) · MicroK8s
 src/
   app/                 routes only (pages, API handlers)
   modules/
+    identity/          users, accounts, server-side sessions, passwords (scrypt),
+                       throttling, authorization rules
     events/            event repository (invitation content as JSONB)
     guests/            guests, random tokens, RSVP rules
   shared/
     db/pool.ts         Postgres pool
-    auth/session.ts    signed session cookie (Web Crypto)
-  middleware.ts        protects /dashboard, /api/events, /api/guests
+    http.ts            request parsing helpers
+  middleware.ts        rejects cookie-less requests to protected paths (real checks are in route handlers)
 migrations/            SQL migrations (applied by scripts/migrate.mjs)
 scripts/
   migrate.mjs          apply pending migrations

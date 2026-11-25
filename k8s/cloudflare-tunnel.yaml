@@ -24,7 +24,8 @@ spec:
     spec:
       containers:
         - name: cloudflared
-          image: cloudflare/cloudflared:latest
+          # Pinned; bump deliberately (check release notes, then apply).
+          image: cloudflare/cloudflared:2026.11.2
           args:
             - tunnel
             - --no-autoupdate

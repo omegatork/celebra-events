@@ -112,9 +112,10 @@ spec:
               mountPath: /app/data
             - name: app-volume
               mountPath: /app/runtime
+          # Ready only when the app can reach Postgres.
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/readyz
               port: 3000
             initialDelaySeconds: 3
             periodSeconds: 5
