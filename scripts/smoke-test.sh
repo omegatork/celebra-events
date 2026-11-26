@@ -30,6 +30,9 @@ post() { # jar url json -> status
   curl -s -o "$TMP/last" -w '%{http_code}' -b "$jar" -c "$jar" -X POST -H 'Content-Type: application/json' -d "$body" "$BASE$url"
 }
 get() { curl -s -o "$TMP/last" -w '%{http_code}' -b "$1" -c "$1" "$BASE$2"; }
+patch() { # jar url json -> status
+  curl -s -o "$TMP/last" -w '%{http_code}' -b "$1" -c "$1" -X PATCH -H 'Content-Type: application/json' -d "$3" "$BASE$2"
+}
 field() { sed -n "s/.*\"$1\":\"\([^\"]*\)\".*/\1/p" "$TMP/last" | head -1; }
 event_json() { # id slug title
   printf '{"id":"%s","slug":"%s","type":"boda","title":"%s","subtitle":"x","hosts":"x","parentsText":"","dateISO":"2030-01-01T17:00:00Z","coverImageUrl":"","galleryUrls":[],"musicTitle":"","theme":"emerald-gold","ceremonyVenue":"","ceremonyAddress":"","ceremonyTime":"","ceremonyMapUrl":"","receptionVenue":"","receptionAddress":"","receptionTime":"","receptionMapUrl":"","dressCode":"","dressCodeNotes":"","giftRegistryText":"","bankDetails":{"bank":"","beneficiary":"","clabe":"","concept":""},"quote":"","itinerary":[],"sections":{"showCountdown":true,"showItinerary":true,"showGallery":false,"showDressCode":true,"showGiftRegistry":true,"showGuestbook":true}}' "$1" "$2" "$3"
@@ -102,10 +105,17 @@ check "user cannot add guests to demo event" 404 "$(post "$A" /api/guests '{"eve
 check "user cannot use admin APIs" 403 "$(get "$A" /api/admin/users)"
 check "user A creates own event" 200 "$(post "$A" /api/events "$(event_json "evt-smoke-a-$RUN" "$SLUG_A" "Smoke A")")"
 check "user A adds a guest" 200 "$(post "$A" /api/guests "$(j '{"eventId":"evt-smoke-a-%s","name":"Invitado A","passesAllocated":2}' "$RUN")")"
+GID_A="$(field id)"
+check "A marks invitation as sent" 200 "$(patch "$A" /api/guests "$(j '{"eventId":"evt-smoke-a-%s","id":"%s","inviteSent":true}' "$RUN" "$GID_A")")"
+check "sent timestamp returned" 1 "$(grep -c '"inviteSentAt":"20' "$TMP/last")"
+check "A unmarks it" 1 "$(patch "$A" /api/guests "$(j '{"eventId":"evt-smoke-a-%s","id":"%s","inviteSent":false}' "$RUN" "$GID_A")" >/dev/null; grep -c '"inviteSentAt":null' "$TMP/last")"
+check "PATCH without inviteSent -> 400" 400 "$(patch "$A" /api/guests "$(j '{"eventId":"evt-smoke-a-%s","id":"%s"}' "$RUN" "$GID_A")")"
+check "PATCH without a session -> 401" 401 "$(code -X PATCH -H 'Content-Type: application/json' -d '{}' "$BASE/api/guests")"
 check "user B signs up" 200 "$(post "$B" /api/auth/register "$(j '{"name":"Smoke B","email":"%s","password":"%s"}' "$EMAIL_B" "$PW_B")")"
 check "B cannot see A's event" 404 "$(get "$B" "/api/events?slug=$SLUG_A")"
 check "B cannot add guests to A's event" 404 "$(post "$B" /api/guests "$(j '{"eventId":"evt-smoke-a-%s","name":"x","passesAllocated":1}' "$RUN")")"
 check "B cannot take A's slug" 409 "$(post "$B" /api/events "$(event_json "evt-smoke-b-$RUN" "$SLUG_A" "Steal")")"
+check "B cannot mark A's guest as sent" 404 "$(patch "$B" /api/guests "$(j '{"eventId":"evt-smoke-a-%s","id":"%s","inviteSent":true}' "$RUN" "$GID_A")")"
 check "admin can see A's event" 200 "$(get "$ADMIN" "/api/events?slug=$SLUG_A")"
 check "logout + login again for A" "200 200" "$(post "$A" /api/auth/logout '{}') $(post "$A" /api/auth/login "$(j '{"email":"%s","password":"%s"}' "$EMAIL_A" "$PW_A")")"
 check "wrong user password -> 401" 401 "$(post "$TMP/x" /api/auth/login "$(j '{"email":"%s","password":"wrong-password"}' "$EMAIL_A")")"

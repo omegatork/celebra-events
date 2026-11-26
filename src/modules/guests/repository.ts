@@ -20,10 +20,11 @@ interface GuestRow {
   dietary_notes: string;
   message: string;
   updated_at: Date;
+  invite_sent_at: Date | null;
 }
 
 const COLUMNS =
-  "id, event_id, token, name, phone, table_number, passes_allocated, passes_confirmed, status, dietary_notes, message, updated_at";
+  "id, event_id, token, name, phone, table_number, passes_allocated, passes_confirmed, status, dietary_notes, message, updated_at, invite_sent_at";
 
 function toGuest(r: GuestRow): GuestPass {
   return {
@@ -38,14 +39,15 @@ function toGuest(r: GuestRow): GuestPass {
     status: r.status,
     dietaryNotes: r.dietary_notes,
     message: r.message,
-    updatedAt: r.updated_at?.toISOString()
+    updatedAt: r.updated_at?.toISOString(),
+    inviteSentAt: r.invite_sent_at ? r.invite_sent_at.toISOString() : null
   };
 }
 
-/** Guest data safe to send to the guest's own browser (no phone). */
+/** Guest data safe to send to the guest's own browser (no phone, no organizer bookkeeping). */
 export function toPublicGuest(g: GuestPass): GuestPass {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { phone, ...rest } = g;
+  const { phone, inviteSentAt, ...rest } = g;
   return rest;
 }
 
@@ -116,6 +118,21 @@ export async function createGuest(input: NewGuestInput): Promise<GuestPass> {
     ]
   );
   return toGuest(rows[0]);
+}
+
+/** Marks the invitation as sent (now) or not sent. Returns the new timestamp, or undefined if no such guest. */
+export async function setInviteSent(
+  eventId: string,
+  guestId: string,
+  sent: boolean
+): Promise<{ inviteSentAt: string | null } | undefined> {
+  const { rows } = await getPool().query<{ invite_sent_at: Date | null }>(
+    `UPDATE guests SET invite_sent_at = CASE WHEN $3 THEN COALESCE(invite_sent_at, now()) ELSE NULL END
+     WHERE event_id = $1 AND id = $2 RETURNING invite_sent_at`,
+    [eventId, guestId, sent]
+  );
+  if (!rows[0]) return undefined;
+  return { inviteSentAt: rows[0].invite_sent_at ? rows[0].invite_sent_at.toISOString() : null };
 }
 
 export async function deleteGuest(eventId: string, guestId: string): Promise<boolean> {

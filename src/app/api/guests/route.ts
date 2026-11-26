@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createGuest, deleteGuest } from "@/modules/guests/repository";
+import { createGuest, deleteGuest, setInviteSent } from "@/modules/guests/repository";
 import { canManageEvent } from "@/modules/identity/authorization";
 import { badRequest, notFound, readJson, requireSession, str } from "@/shared/http";
 
@@ -27,6 +27,23 @@ export async function POST(request: Request) {
     console.error("createGuest failed", err);
     return badRequest("No se pudo crear el invitado");
   }
+}
+
+// PATCH /api/guests  { eventId, id, inviteSent: boolean }  -> mark the invitation as sent / not sent
+export async function PATCH(request: Request) {
+  const s = await requireSession();
+  if (s instanceof NextResponse) return s;
+
+  const body = await readJson(request);
+  const eventId = str(body?.eventId);
+  const id = str(body?.id);
+  if (!eventId || !id || typeof body?.inviteSent !== "boolean") {
+    return badRequest("eventId, id e inviteSent son obligatorios");
+  }
+  if (!(await canManageEvent(s, eventId))) return notFound("Evento no encontrado");
+
+  const result = await setInviteSent(eventId, id, body.inviteSent);
+  return result ? NextResponse.json(result) : notFound("Invitado no encontrado");
 }
 
 // DELETE /api/guests?eventId=...&id=...

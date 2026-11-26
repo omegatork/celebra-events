@@ -27,6 +27,8 @@ export interface GuestPass {
   dietaryNotes?: string;
   message?: string;
   updatedAt?: string;
+  /** When the organizer sent the invitation (organizer-only; never sent to guests). */
+  inviteSentAt?: string | null;
 }
 
 /** Public guestbook entry: only what is safe to show to every visitor. */
@@ -70,6 +72,9 @@ export interface EventInvitation {
   storeRegistryUrl?: string;
   quote: string;
   itinerary: ItineraryItem[];
+  /** Custom WhatsApp texts (placeholders: {nombre} {evento} {pases} {mesa} {enlace}). */
+  whatsappMessage?: string;
+  whatsappReminder?: string;
   sections: {
     showCountdown: boolean;
     showItinerary: boolean;

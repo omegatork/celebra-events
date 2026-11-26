@@ -21,6 +21,8 @@ import {
 import { EventInvitation, GuestPass, ThemePalette } from "@/lib/types";
 import { newEventTemplate } from "@/lib/eventTemplate";
 import AccessBar, { EventMeta, Me } from "@/components/dashboard/AccessBar";
+import WhatsAppSender from "@/components/dashboard/WhatsAppSender";
+import { renderMessage, templateFor, whatsappLink } from "@/lib/whatsapp";
 
 export default function DashboardPage() {
   const [me, setMe] = useState<Me | null>(null);
@@ -33,6 +35,7 @@ export default function DashboardPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveBanner, setSaveBanner] = useState("");
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [senderOpen, setSenderOpen] = useState(false);
 
   // New Guest Modal / Form State
   const [newGuestName, setNewGuestName] = useState("");
@@ -170,11 +173,33 @@ export default function DashboardPage() {
   };
 
   const getWhatsAppShareUrl = (guest: GuestPass) => {
-    const url = getGuestInviteUrl(guest);
-    const text = `¡Hola *${guest.name}*! ✨ Con mucha alegría queremos compartir contigo la invitación digital a *${selectedEvent?.title}* (${selectedEvent?.subtitle}).\n\n🎟️ Hemos reservado *${guest.passesAllocated} pases* para ustedes.\n\nPor favor abre tu invitación y confirma tu asistencia aquí:\n${url}`;
-    const cleanPhone = (guest.phone || "").replace(/[^0-9]/g, "");
-    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+    if (!selectedEvent) return "#";
+    const text = renderMessage(templateFor(selectedEvent, "invite"), selectedEvent, guest, getGuestInviteUrl(guest));
+    return whatsappLink(guest.phone, text);
   };
+
+  /** Optimistically mark a guest's invitation as sent / not sent, then persist it. */
+  const markInviteSent = async (guest: GuestPass, sent: boolean) => {
+    if (!selectedEvent) return;
+    const previous = guest.inviteSentAt ?? null;
+    const optimistic = sent ? previous ?? new Date().toISOString() : null;
+    const apply = (value: string | null) =>
+      setGuests((list) => list.map((g) => (g.id === guest.id ? { ...g, inviteSentAt: value } : g)));
+    apply(optimistic);
+    try {
+      const res = await fetch("/api/guests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: selectedEvent.id, id: guest.id, inviteSent: sent })
+      });
+      if (!res.ok) throw new Error();
+      apply((await res.json()).inviteSentAt ?? null);
+    } catch {
+      apply(previous);
+    }
+  };
+
+  const sentCount = guests.filter((g) => g.inviteSentAt).length;
 
   const copyGuestLink = (guest: GuestPass) => {
     navigator.clipboard.writeText(getGuestInviteUrl(guest));
@@ -478,6 +503,45 @@ export default function DashboardPage() {
               </div>
             </form>
 
+            {/* Guided WhatsApp sending */}
+            <div className="p-5 rounded-3xl bg-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+              <div>
+                <p className="font-serif text-lg text-emerald-900">Envía las invitaciones por WhatsApp</p>
+                <p className="text-xs text-emerald-800/80">
+                  {guests.length === 0
+                    ? "Agrega invitados para empezar."
+                    : `${sentCount} de ${guests.length} enviadas · te guiamos invitado por invitado desde tu propio WhatsApp.`}
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={guests.length === 0}
+                onClick={() => setSenderOpen(true)}
+                className="shrink-0 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs uppercase tracking-wider font-semibold inline-flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Enviar por WhatsApp
+              </button>
+            </div>
+
+            {senderOpen && (
+              <WhatsAppSender
+                event={selectedEvent}
+                guests={guests}
+                inviteUrl={getGuestInviteUrl}
+                markSent={markInviteSent}
+                onEventSaved={(saved) =>
+                  // Only take the message fields, keeping any unsaved edits from the editor tab.
+                  setSelectedEvent((cur) =>
+                    cur
+                      ? { ...cur, whatsappMessage: saved.whatsappMessage, whatsappReminder: saved.whatsappReminder }
+                      : saved
+                  )
+                }
+                onClose={() => setSenderOpen(false)}
+              />
+            )}
+
             {/* Guests Table */}
             <div className="rounded-3xl bg-white border border-stone-200 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
@@ -497,7 +561,34 @@ export default function DashboardPage() {
                       <tr key={g.id} className="hover:bg-stone-50/80">
                         <td className="py-4 px-5">
                           <p className="font-semibold text-stone-900">{g.name}</p>
-                          <p className="text-xs text-stone-400 font-mono">?g={g.token}</p>
+                          {g.inviteSentAt ? (
+                            <p className="text-xs text-emerald-700 mt-0.5">
+                              ✓ Enviada{" "}
+                              {new Date(g.inviteSentAt).toLocaleDateString("es-MX", {
+                                day: "numeric",
+                                month: "short"
+                              })}{" "}
+                              ·{" "}
+                              <button
+                                type="button"
+                                onClick={() => markInviteSent(g, false)}
+                                className="underline text-stone-400 hover:text-stone-600"
+                              >
+                                desmarcar
+                              </button>
+                            </p>
+                          ) : (
+                            <p className="text-xs text-stone-400 mt-0.5">
+                              Sin enviar ·{" "}
+                              <button
+                                type="button"
+                                onClick={() => markInviteSent(g, true)}
+                                className="underline hover:text-stone-600"
+                              >
+                                marcar como enviada
+                              </button>
+                            </p>
+                          )}
                         </td>
                         <td className="py-4 px-4 text-xs text-stone-600">{g.tableNumber}</td>
                         <td className="py-4 px-4">
@@ -553,6 +644,7 @@ export default function DashboardPage() {
                               href={getWhatsAppShareUrl(g)}
                               target="_blank"
                               rel="noreferrer"
+                              onClick={() => !g.inviteSentAt && markInviteSent(g, true)}
                               className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium inline-flex items-center gap-1"
                             >
                               <MessageCircle className="w-3.5 h-3.5" />
