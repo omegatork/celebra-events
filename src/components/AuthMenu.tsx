@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { User, X } from "lucide-react";
+import GoogleButton from "./GoogleButton";
 
 /** Header button + modal: "Iniciar sesión / Crear cuenta" with the invitation-password option. */
 export default function AuthMenu({ signedIn }: { signedIn: boolean }) {
@@ -59,6 +60,9 @@ export default function AuthMenu({ signedIn }: { signedIn: boolean }) {
             >
               <X className="w-4 h-4" />
             </button>
+            <div className="pt-2 space-y-3">
+              <GoogleButton />
+            </div>
             <Link
               href="/login"
               className="block w-full py-3 rounded-xl bg-[#1A3C34] hover:bg-[#122b25] text-white text-center text-sm font-semibold"
