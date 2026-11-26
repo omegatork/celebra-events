@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { User, X } from "lucide-react";
 
@@ -36,7 +37,10 @@ export default function AuthMenu({ signedIn }: { signedIn: boolean }) {
         Iniciar sesión / Crear cuenta
       </button>
 
-      {open && (
+      {/* Portal to <body>: the sticky header uses backdrop-blur, which would otherwise become
+          the containing block for this fixed overlay and clip it to the header's height. */}
+      {open &&
+        createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
           onClick={() => setOpen(false)}
@@ -76,8 +80,9 @@ export default function AuthMenu({ signedIn }: { signedIn: boolean }) {
             </Link>
             <p className="text-xs text-stone-500 text-center">Para invitaciones creadas sin cuenta</p>
           </div>
-        </div>
-      )}
+        </div>,
+          document.body
+        )}
     </>
   );
 }
