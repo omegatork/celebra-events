@@ -288,7 +288,8 @@ export default function DashboardPage() {
             >
               {events.map((ev) => (
                 <option key={ev.id} value={ev.slug}>
-                  {ev.title} ({ev.subtitle})
+                  {ev.title || "Nueva invitación (sin título)"}
+                  {ev.subtitle ? ` (${ev.subtitle})` : ""}
                 </option>
               ))}
             </select>
@@ -451,7 +452,7 @@ export default function DashboardPage() {
                     value={newGuestName}
                     onChange={(e) => setNewGuestName(e.target.value)}
                     placeholder="Ej. Familia Hernández López"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                   />
                 </div>
 
@@ -464,7 +465,7 @@ export default function DashboardPage() {
                     value={newGuestPhone}
                     onChange={(e) => setNewGuestPhone(e.target.value)}
                     placeholder="5215512345678"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                   />
                 </div>
 
@@ -700,10 +701,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.title}
+                      placeholder="Ej. Ana & Luis  ·  XV Años de Valeria"
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, title: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
 
@@ -714,10 +716,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.subtitle}
+                      placeholder="Ej. ¡Nos Casamos!  ·  Mis XV Años"
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, subtitle: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
 
@@ -733,7 +736,7 @@ export default function DashboardPage() {
                           theme: e.target.value as ThemePalette
                         })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm bg-white"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400 bg-white"
                     >
                       <option value="emerald-gold">Verde Esmeralda & Oro (Clásico Boda)</option>
                       <option value="rose-quartz">Rosa Cuarzo & Champagne (XV Años / Romántico)</option>
@@ -744,15 +747,15 @@ export default function DashboardPage() {
 
                   <div>
                     <label className="block text-xs uppercase tracking-wider text-stone-500 mb-1">
-                      Fecha y Hora del Evento (ISO)
+                      Fecha y Hora del Evento
                     </label>
                     <input
-                      type="text"
-                      value={selectedEvent.dateISO}
+                      type="datetime-local"
+                      value={toLocalInput(selectedEvent.dateISO)}
                       onChange={(e) =>
-                        setSelectedEvent({ ...selectedEvent, dateISO: e.target.value })
+                        setSelectedEvent({ ...selectedEvent, dateISO: fromLocalInput(e.target.value) })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                 </div>
@@ -764,10 +767,11 @@ export default function DashboardPage() {
                   <input
                     type="url"
                     value={selectedEvent.coverImageUrl}
+                    placeholder="Pega el enlace de una foto (opcional: si lo dejas vacío usamos una imagen elegante)"
                     onChange={(e) =>
                       setSelectedEvent({ ...selectedEvent, coverImageUrl: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                   />
                 </div>
 
@@ -778,10 +782,11 @@ export default function DashboardPage() {
                   <textarea
                     rows={2}
                     value={selectedEvent.quote}
+                    placeholder="Ej. &quot;El amor es paciente, el amor es bondadoso...&quot; (opcional)"
                     onChange={(e) =>
                       setSelectedEvent({ ...selectedEvent, quote: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                   />
                 </div>
 
@@ -792,10 +797,11 @@ export default function DashboardPage() {
                   <textarea
                     rows={3}
                     value={selectedEvent.parentsText}
+                    placeholder="Ej. Con la bendición de Dios y de nuestros padres: María y José, Laura y Roberto"
                     onChange={(e) =>
                       setSelectedEvent({ ...selectedEvent, parentsText: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                   />
                 </div>
               </div>
@@ -814,10 +820,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.ceremonyVenue}
+                      placeholder="Ej. Parroquia de San Juan Bautista"
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, ceremonyVenue: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                   <div>
@@ -827,10 +834,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.ceremonyTime}
+                      placeholder="Ej. 17:00 hrs"
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, ceremonyTime: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -840,10 +848,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.ceremonyAddress}
+                      placeholder="Ej. Av. Juárez 123, Centro, Guadalajara, Jal."
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, ceremonyAddress: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
 
@@ -854,10 +863,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.receptionVenue}
+                      placeholder="Ej. Jardín Los Olivos"
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, receptionVenue: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                   <div>
@@ -867,10 +877,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.receptionTime}
+                      placeholder="Ej. 19:30 hrs"
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, receptionTime: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -880,10 +891,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.receptionAddress}
+                      placeholder="Ej. Camino Real 45, Zapopan, Jal."
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, receptionAddress: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                 </div>
@@ -902,10 +914,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.dressCode}
+                      placeholder="Ej. Formal  ·  Etiqueta  ·  Casual elegante"
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, dressCode: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                   <div>
@@ -915,10 +928,11 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.dressCodeNotes}
+                      placeholder="Ej. Evitar color blanco (opcional)"
                       onChange={(e) =>
                         setSelectedEvent({ ...selectedEvent, dressCodeNotes: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                   <div>
@@ -928,13 +942,14 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.bankDetails.bank}
+                      placeholder="Ej. BBVA (opcional)"
                       onChange={(e) =>
                         setSelectedEvent({
                           ...selectedEvent,
                           bankDetails: { ...selectedEvent.bankDetails, bank: e.target.value }
                         })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                   <div>
@@ -944,13 +959,14 @@ export default function DashboardPage() {
                     <input
                       type="text"
                       value={selectedEvent.bankDetails.clabe}
+                      placeholder="18 dígitos (opcional)"
                       onChange={(e) =>
                         setSelectedEvent({
                           ...selectedEvent,
                           bankDetails: { ...selectedEvent.bankDetails, clabe: e.target.value }
                         })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm font-mono"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400 font-mono"
                     />
                   </div>
                 </div>
@@ -1032,4 +1048,17 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+}
+
+/** ISO timestamp -> value for <input type="datetime-local"> in the organizer's local time. */
+function toLocalInput(iso: string) {
+  const d = new Date(iso);
+  if (!iso || Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fromLocalInput(value: string) {
+  const d = new Date(value);
+  return value && !Number.isNaN(d.getTime()) ? d.toISOString() : "";
 }

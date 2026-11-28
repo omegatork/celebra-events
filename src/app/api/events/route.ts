@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   if (!body.slug || !isValidSlug(body.slug)) {
     return badRequest("URL inválida: usa minúsculas, números y guiones (3-80 caracteres)");
   }
-  if (!body.title || typeof body.title !== "string") return badRequest("El título es obligatorio");
+  if (typeof body.title !== "string") return badRequest("El título es obligatorio");
   if (JSON.stringify(body).length > 200_000) {
     return NextResponse.json({ error: "Evento demasiado grande" }, { status: 413 });
   }

@@ -20,6 +20,7 @@ import {
   Wine
 } from "lucide-react";
 import { EventInvitation, GuestbookEntry, GuestPass, ThemePalette } from "@/lib/types";
+import { DEFAULT_COVER_IMAGE } from "@/lib/eventTemplate";
 
 const THEME_STYLES: Record<
   ThemePalette,
@@ -133,7 +134,7 @@ export default function InvitationView({
     const updateCountdown = () => {
       const target = new Date(event.dateISO).getTime();
       const now = Date.now();
-      const diff = Math.max(0, target - now);
+      const diff = Number.isNaN(target) ? 0 : Math.max(0, target - now);
 
       setTimeLeft({
         days: Math.floor(diff / (1000 * 60 * 60 * 24)),
@@ -262,12 +263,15 @@ export default function InvitationView({
     }
   };
 
-  const formattedDate = new Date(event.dateISO).toLocaleDateString("es-MX", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
+  const eventDate = new Date(event.dateISO);
+  const formattedDate = Number.isNaN(eventDate.getTime())
+    ? "Fecha por confirmar"
+    : eventDate.toLocaleDateString("es-MX", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
 
   // 1. Animated Envelope & Wax Seal Opener (like Invitio / InvitameOK)
   if (!isEnvelopeOpen) {
@@ -353,7 +357,7 @@ export default function InvitationView({
       {/* Hero Cover Section */}
       <header className="relative h-[85vh] min-h-[540px] w-full overflow-hidden flex items-end justify-center">
         <img
-          src={event.coverImageUrl}
+          src={event.coverImageUrl || DEFAULT_COVER_IMAGE}
           alt={event.title}
           className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-1000"
         />
@@ -394,7 +398,7 @@ export default function InvitationView({
 
         <div className={`p-8 rounded-3xl ${theme.cardBg} border ${theme.border} shadow-sm space-y-4`}>
           <Sparkles className={`w-6 h-6 mx-auto ${theme.accent}`} />
-          <h2 className={`font-serif text-2xl ${theme.primaryText}`}>{event.hosts}</h2>
+          <h2 className={`font-serif text-2xl ${theme.primaryText}`}>{event.hosts || event.title}</h2>
           <p className="whitespace-pre-line text-sm sm:text-base text-stone-600 leading-relaxed">
             {event.parentsText}
           </p>
@@ -469,7 +473,7 @@ export default function InvitationView({
             </div>
 
             <a
-              href={event.ceremonyMapUrl}
+              href={mapLink(event.ceremonyMapUrl, event.ceremonyVenue, event.ceremonyAddress)}
               target="_blank"
               rel="noreferrer"
               className={`w-full py-3 px-5 rounded-xl text-center text-xs uppercase tracking-widest font-medium transition ${theme.primary}`}
@@ -505,7 +509,7 @@ export default function InvitationView({
             </div>
 
             <a
-              href={event.receptionMapUrl}
+              href={mapLink(event.receptionMapUrl, event.receptionVenue, event.receptionAddress)}
               target="_blank"
               rel="noreferrer"
               className={`w-full py-3 px-5 rounded-xl text-center text-xs uppercase tracking-widest font-medium transition ${theme.primary}`}
@@ -811,4 +815,13 @@ export default function InvitationView({
       )}
     </div>
   );
+}
+
+/** The organizer's map link, or a Google Maps search built from the venue and address. */
+function mapLink(url: string, venue: string, address: string) {
+  if (url && url !== "https://maps.google.com") return url;
+  const query = [venue, address].filter(Boolean).join(", ");
+  return query
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+    : "https://maps.google.com";
 }
