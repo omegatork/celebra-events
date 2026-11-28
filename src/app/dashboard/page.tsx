@@ -40,8 +40,8 @@ export default function DashboardPage() {
   // New Guest Modal / Form State
   const [newGuestName, setNewGuestName] = useState("");
   const [newGuestPhone, setNewGuestPhone] = useState("");
-  const [newGuestPasses, setNewGuestPasses] = useState(2);
-  const [newGuestTable, setNewGuestTable] = useState("Mesa 1");
+  const [newGuestPasses, setNewGuestPasses] = useState("");
+  const [newGuestTable, setNewGuestTable] = useState("");
 
   const loadEvents = async (preferredSlug?: string) => {
     const res = await fetch("/api/events");
@@ -146,14 +146,15 @@ export default function DashboardPage() {
         eventId: selectedEvent.id,
         name: newGuestName.trim(),
         phone: newGuestPhone.trim(),
-        passesAllocated: Number(newGuestPasses),
+        passesAllocated: Number(newGuestPasses) || 2, // blank = the "2" shown as hint
         tableNumber: newGuestTable.trim() || "Por asignar"
       })
     });
     if (res.ok) {
       setNewGuestName("");
       setNewGuestPhone("");
-      setNewGuestPasses(2);
+      setNewGuestPasses("");
+      setNewGuestTable("");
       selectEvent(selectedEvent.slug);
     }
   };
@@ -458,13 +459,13 @@ export default function DashboardPage() {
 
                 <div>
                   <label className="block text-[11px] uppercase tracking-wider text-stone-500 mb-1">
-                    WhatsApp (Con código país)
+                    WhatsApp (10 dígitos)
                   </label>
                   <input
                     type="text"
                     value={newGuestPhone}
                     onChange={(e) => setNewGuestPhone(e.target.value)}
-                    placeholder="5215512345678"
+                    placeholder="Ej. 33 1234 5678"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                   />
                 </div>
@@ -479,15 +480,18 @@ export default function DashboardPage() {
                       min={1}
                       max={15}
                       value={newGuestPasses}
-                      onChange={(e) => setNewGuestPasses(Number(e.target.value))}
-                      className="w-20 px-3 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      onChange={(e) => setNewGuestPasses(e.target.value)}
+                      placeholder="2"
+                      aria-label="Pases asignados"
+                      className="w-20 px-3 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                     <input
                       type="text"
                       value={newGuestTable}
                       onChange={(e) => setNewGuestTable(e.target.value)}
-                      placeholder="Mesa 2"
-                      className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm"
+                      placeholder="Ej. Mesa 5 (opcional)"
+                      aria-label="Mesa"
+                      className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm placeholder:text-stone-400"
                     />
                   </div>
                 </div>
